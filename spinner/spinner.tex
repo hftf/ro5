@@ -1,0 +1,120 @@
+% !TEX program = xelatex
+% \documentclass[border=3mm]{standalone}
+\documentclass{article}
+
+\newif\ifxe\xefalse
+\ifxe
+\usepackage{fontspec}
+\usepackage{realscripts}
+\setmainfont[Numbers={Lining}]{Brill}
+\newcommand\mysub[2]{\textit{#1}\textsubscript{#2}}
+\else
+\usepackage{mathpazo}
+\newcommand\mysub[2]{$#1_{#2}$}
+\fi
+
+\usepackage[paperwidth=5.5in, paperheight=8in]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{arrows,decorations.text,shapes}
+\tikzset{
+cross/.style={preaction={draw=white,-,line width=3pt,shorten <=20pt,shorten >=20pt}},
+>=latex',
+% Sources for precise pin style:
+% http://tex.stackexchange.com/a/49793/
+% http://tex.stackexchange.com/a/43946/
+precise pin/.style args={#1:#2}{
+    % pin={[
+    %     inner sep=0pt,
+        label={[
+            append after command={
+                node [
+                    inner sep=0pt,
+                    at=(\tikzlastnode.#1),
+                    anchor=#1+180
+                ] {#2}
+            }
+        % ]center:{}}
+        ]#1:{}}
+    % ]#1:{}}
+}
+}
+\def\myalph#1{\csname @Alph\endcsname{#1}}
+\def\myroman#1{\csname @Roman\endcsname{#1}}
+
+\begin{document}
+\newcommand\nteams{10}
+\newcommand\prefix{Team }
+\newcommand\radius{3.3}
+\newcommand\teamfmt[1]{\textbf{Team \myalph{#1}}}
+\newcommand\sitefmt[1]{Site #1}
+\newcommand\roundfmt[1]{\textit{#1}}
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}%[scale=1.3]
+
+\pgfmathsetmacro\nminusone{\nteams-1}
+\pgfmathsetmacro\dtheta{360/(\nteams-1)}
+\foreach \i in {1,...,\nminusone}{
+	\pgfmathsetmacro\angle{\dtheta*\i} % 90+
+	\def\effangle{\ifnum\i=0 -180\else\angle\fi}
+	\def\effradius{\ifnum\i=0 0\else\radius\fi}
+	% \def\name{$\prefix^{\angle^\circ}_{\i}$}
+	\def\name{\teamfmt{\i}}
+	\coordinate[precise pin={\effangle:\name}] (\prefix\i) at (\angle:\effradius);
+	\pgfmathsetmacro\theta{\dtheta/2+\angle}
+	\node[right,
+	%draw,rounded rectangle,rounded rectangle west arc=none,
+	rotate=\theta] at (\theta:\effradius) {\roundfmt{\i}};
+	\ifnum\i=1
+	\node[left,
+	%draw,rounded rectangle,rounded rectangle east arc=none,
+	rotate=\theta] at (\theta:\effradius) {\roundfmt{Round}};
+	\fi
+	% \draw (0:0) -- (\angle:3.5);
+}
+\coordinate (\prefix0);
+
+\foreach \ia in {0,...,\nminusone}{
+	\foreach \ib in {\ia,...,\nminusone}{
+		\draw[ultra thin,gray!15] (\prefix\ia) -- (\prefix\ib);
+	}
+}
+
+% \node (\prefix0) {\prefix\nteams};
+% Stick the brad in here
+\node[draw,ultra thin,star,star points=9,inner sep=0.5mm] (0,0) {};
+\node[yshift=-3em,xshift=-1em] (\prefix\nteams) at (0,0) {\teamfmt{\nteams}};
+% \coordinate(\prefix0) at (\prefix0.north);
+\draw[ultra thin] circle (\radius);
+
+\def\arcdist{30}
+\def\raisebase{0.125}
+\path [decorate,decoration={text along path,text align=center,text={Rotate once after each round}}] (90+\arcdist:\radius+1+\raisebase) arc (90+\arcdist:90-\arcdist:\radius+1+\raisebase);
+\draw[<-] (90+\arcdist:\radius+1) arc (90+\arcdist:90-\arcdist:\radius+1);
+
+\clip circle (\radius);
+\pgfmathtruncatemacro\novertwo{\nteams/2}
+\foreach \i in {1,...,\novertwo}{
+	% 0 1 -1 -1
+	\pgfmathtruncatemacro\c{Mod(-1+( 1*\i),\nteams)}
+	\pgfmathtruncatemacro\n{Mod( 0+(-1*\i),\nteams)}
+	\ifnum\c=0\global\def\c{\nteams}\fi
+	\def\bend{\ifnum\i=1 out=300,in=240\else cross\fi}
+	\def\pos {\ifnum\i=1 0.5\else 0.5\fi}
+	\def\startanchor {\ifnum\i=1 .300\else\fi}
+	\edef\temp{\noexpand\draw[thick,sloped,line cap=rect,\bend,shorten <=-1pt,shorten >=-1pt] (\prefix\c\startanchor)
+		to node[pos=\pos,above] {\sitefmt{\i}} (\prefix\n);}
+	\temp
+}
+\end{tikzpicture}
+
+\caption{A \nteams-team round-robin as rotations of a 1-factor of \mysub K{\nteams}}
+\end{figure}
+\vspace*\fill
+
+\end{document}
+
+% http://www.emba.uvm.edu/~jdinitz/preprints/design_tourney_talk.pdf
+% http://www.sci.brooklyn.cuny.edu/~amotz/GC-ALGORITHMS/PRESENTATIONS/edge-coloring.pdf
