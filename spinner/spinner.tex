@@ -17,8 +17,18 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows,decorations.text,shapes}
 \tikzset{
+match/.style={thick,sloped,line cap=rect,shorten <=-1pt,shorten >=-1pt},
+radial/.style={out=300,in=240},
+transverse/.style={cross},
 cross/.style={preaction={draw=white,-,line width=3pt,shorten <=20pt,shorten >=20pt}},
+% Misc
 >=latex',
+brad/.style={draw,ultra thin,star,star points=9,inner sep=0.5mm},
+gridline/.style={ultra thin,gray!15},
+% Rounds
+teamname/.style args={#1}{precise pin={#1}},
+roundname/.style={left}, %draw,rounded rectangle,rounded rectangle east arc=none,
+roundnum/.style={right}, %draw,rounded rectangle,rounded rectangle west arc=none,
 % Sources for precise pin style:
 % http://tex.stackexchange.com/a/49793/
 % http://tex.stackexchange.com/a/43946/
@@ -60,17 +70,12 @@ precise pin/.style args={#1:#2}{
 	\pgfmathsetmacro\angle{\dtheta*\i} % 90+
 	\def\effangle{\ifnum\i=0 -180\else\angle\fi}
 	\def\effradius{\ifnum\i=0 0\else\radius\fi}
-	% \def\name{$\prefix^{\angle^\circ}_{\i}$}
 	\def\name{\teamfmt{\i}}
-	\coordinate[precise pin={\effangle:\name}] (\prefix\i) at (\angle:\effradius);
+	\coordinate[teamname={\effangle:\name}] (\prefix\i) at (\angle:\effradius);
 	\pgfmathsetmacro\theta{\dtheta/2+\angle}
-	\node[right,
-	%draw,rounded rectangle,rounded rectangle west arc=none,
-	rotate=\theta] at (\theta:\effradius) {\roundfmt{\i}};
+	\node[roundnum,rotate=\theta] at (\theta:\effradius) {\roundfmt{\i}};
 	\ifnum\i=1
-	\node[left,
-	%draw,rounded rectangle,rounded rectangle east arc=none,
-	rotate=\theta] at (\theta:\effradius) {\roundfmt{Round}};
+	\node[roundname,rotate=\theta] at (\theta:\effradius) {\roundfmt{Round}};
 	\fi
 	% \draw (0:0) -- (\angle:3.5);
 }
@@ -78,13 +83,13 @@ precise pin/.style args={#1:#2}{
 
 \foreach \ia in {0,...,\nminusone}{
 	\foreach \ib in {\ia,...,\nminusone}{
-		\draw[ultra thin,gray!15] (\prefix\ia) -- (\prefix\ib);
+		\draw[gridline] (\prefix\ia) -- (\prefix\ib);
 	}
 }
 
 % \node (\prefix0) {\prefix\nteams};
 % Stick the brad in here
-\node[draw,ultra thin,star,star points=9,inner sep=0.5mm] (0,0) {};
+\node[brad] (0,0) {};
 \node[yshift=-3em,xshift=-1em] (\prefix\nteams) at (0,0) {\teamfmt{\nteams}};
 % \coordinate(\prefix0) at (\prefix0.north);
 \draw[ultra thin] circle (\radius);
@@ -101,12 +106,11 @@ precise pin/.style args={#1:#2}{
 	\pgfmathtruncatemacro\c{Mod(-1+( 1*\i),\nteams)}
 	\pgfmathtruncatemacro\n{Mod( 0+(-1*\i),\nteams)}
 	\ifnum\c=0\global\def\c{\nteams}\fi
-	\def\bend{\ifnum\i=1 out=300,in=240\else cross\fi}
+	\def\bend{\ifnum\i=1 radial\else transverse\fi}
 	\def\pos {\ifnum\i=1 0.5\else 0.5\fi}
 	\def\startanchor {\ifnum\i=1 .300\else\fi}
-	\edef\temp{\noexpand\draw[thick,sloped,line cap=rect,\bend,shorten <=-1pt,shorten >=-1pt] (\prefix\c\startanchor)
-		to node[pos=\pos,above] {\sitefmt{\i}} (\prefix\n);}
-	\temp
+	\draw[match,\bend] (\prefix\c\startanchor)
+		to node[pos=\pos,above] {\sitefmt{\i}} (\prefix\n);
 }
 \end{tikzpicture}
 
