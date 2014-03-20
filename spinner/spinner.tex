@@ -2,7 +2,7 @@
 % \documentclass[border=3mm]{standalone}
 \documentclass{article}
 
-\newif\ifxe\xefalse
+\newif\ifxe\xetrue
 \ifxe
 \usepackage{fontspec}
 \usepackage{realscripts}
@@ -94,7 +94,7 @@ precise pin/.style args={#1:#2}{
 % \coordinate(\prefix0) at (\prefix0.north);
 \draw[ultra thin] circle (\radius);
 
-\def\arcdist{30}
+\def\arcdist{27}
 \def\raisebase{0.125}
 \path [decorate,decoration={text along path,text align=center,text={Rotate once after each round}}] (90+\arcdist:\radius+1+\raisebase) arc (90+\arcdist:90-\arcdist:\radius+1+\raisebase);
 \draw[<-] (90+\arcdist:\radius+1) arc (90+\arcdist:90-\arcdist:\radius+1);
